@@ -26,6 +26,7 @@ pub enum ErrorCode {
     DuplicateOutput,
     DoubleSpend,
     CostExceeded,
+    RuntimeError,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

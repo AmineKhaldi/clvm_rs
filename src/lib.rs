@@ -6,7 +6,6 @@ mod dialect;
 mod err_utils;
 pub mod f_table;
 mod gen;
-mod int_to_bytes;
 pub mod more_ops;
 pub mod node;
 mod number;
