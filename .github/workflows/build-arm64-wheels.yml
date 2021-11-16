@@ -41,7 +41,10 @@ jobs:
             echo $PATH && \
             curl -L https://sh.rustup.rs > rustup-init.sh && \
             sh rustup-init.sh -y && \
-            yum -y install openssl-devel && \
+            yum -y install lzip openssl-devel && \
+            curl -L https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz | lzip -dc | tar x && \
+            cd gmp-6.2.1 && ./configure --enable-fat --enable-static --disable-shared --with-pic && \
+            make -j 6 && sudo make install && cd .. && rm -rf gmp-6.2.1 && \
             source $HOME/.cargo/env && \
             rustup target add aarch64-unknown-linux-musl && \
             rm -rf venv && \

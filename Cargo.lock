@@ -83,7 +83,6 @@ name = "clvm_rs"
 version = "0.1.15"
 dependencies = [
  "bls12_381",
- "gmp-mpfr-sys",
  "hex",
  "lazy_static",
  "openssl",
@@ -161,16 +160,6 @@ checksum = "501466ecc8a30d1d3b7fc9229b122b2ce8ed6e9d9223f1138d4babb253e51817"
 dependencies = [
  "typenum",
  "version_check",
-]
-
-[[package]]
-name = "gmp-mpfr-sys"
-version = "1.4.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a146a7357ce9573bdcc416fc4a99b960e166e72d8eaffa7c59966d51866b5bfb"
-dependencies = [
- "libc",
- "winapi",
 ]
 
 [[package]]
