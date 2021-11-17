@@ -1,5 +1,6 @@
 fn main() {
-    if cfg!(windows) {
+    if cfg!(target_family = "wasm") {
+    } else if cfg!(windows) {
         println!("cargo:rustc-link-lib=mpir");
         println!("cargo:rustc-link-search=mpir_gc_x64");
     } else {

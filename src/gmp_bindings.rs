@@ -16,8 +16,8 @@ pub struct mpz_t {
 #[cfg(test)]
 type c_char = i8;
 type c_int = i32;
-type c_long = i64;
-type c_ulong = u64;
+pub type c_long = i64;
+pub type c_ulong = u64;
 type c_ulonglong = u64;
 type mpz_srcptr = *const mpz_t;
 type mpz_ptr = *mut mpz_t;

@@ -32,6 +32,7 @@ openssl = { version = "0.10.35", features = ["vendored"] }
 [target.'cfg(target_family="wasm")'.dependencies]
 wasm-bindgen = "=0.2.75"
 wasm-bindgen-test = "=0.3.25"
+gmp-mpfr-sys = { git = "https://github.com/prozacchiwawa/gmp-mpfr-sys", branch = "wasm", default-features = false }
 
 [target.'cfg(not(target_family="wasm"))'.dependencies]
 pyo3 = "=0.14.2"

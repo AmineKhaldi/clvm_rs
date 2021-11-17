@@ -1,8 +1,13 @@
 use crate::allocator::{Allocator, NodePtr};
+#[cfg(not(target_family = "wasm"))]
 use crate::gmp_bindings as gmp;
+#[cfg(not(target_family = "wasm"))]
+use crate::gmp_bindings::{c_long, c_ulong};
 use crate::node::Node;
 use crate::reduction::EvalErr;
 use core::mem::MaybeUninit;
+#[cfg(target_family = "wasm")]
+use gmp_mpfr_sys::gmp;
 use std::cmp::Ordering;
 use std::cmp::PartialOrd;
 use std::ffi::c_void;
@@ -10,6 +15,11 @@ use std::ops::Drop;
 use std::ops::{
     AddAssign, BitAndAssign, BitOrAssign, BitXorAssign, MulAssign, Not, Shl, Shr, SubAssign,
 };
+
+#[cfg(target_family = "wasm")]
+type c_long = i32;
+#[cfg(target_family = "wasm")]
+type c_ulong = u32;
 
 #[allow(clippy::enum_variant_names)]
 #[derive(PartialEq)]
@@ -228,7 +238,7 @@ impl AddAssign<&Number> for Number {
 impl AddAssign<u64> for Number {
     fn add_assign(&mut self, other: u64) {
         unsafe {
-            gmp::mpz_add_ui(&mut self.v, &self.v, other);
+            gmp::mpz_add_ui(&mut self.v, &self.v, other as c_ulong);
         }
     }
 }
@@ -260,7 +270,7 @@ impl Shl<i32> for Number {
     fn shl(mut self, n: i32) -> Self {
         assert!(n >= 0);
         unsafe {
-            gmp::mpz_mul_2exp(&mut self.v, &self.v, n as u64);
+            gmp::mpz_mul_2exp(&mut self.v, &self.v, n as c_ulong);
         }
         self
     }
@@ -271,7 +281,7 @@ impl Shr<i32> for Number {
     fn shr(mut self, n: i32) -> Self {
         assert!(n >= 0);
         unsafe {
-            gmp::mpz_fdiv_q_2exp(&mut self.v, &self.v, n as u64);
+            gmp::mpz_fdiv_q_2exp(&mut self.v, &self.v, n as c_ulong);
         }
         self
     }
@@ -283,7 +293,7 @@ impl From<i64> for Number {
     fn from(other: i64) -> Self {
         let mut v = MaybeUninit::<gmp::mpz_t>::uninit();
         unsafe {
-            gmp::mpz_init_set_si(v.as_mut_ptr(), other);
+            gmp::mpz_init_set_si(v.as_mut_ptr(), other as c_long);
         }
         Number {
             v: unsafe { v.assume_init() },
@@ -295,7 +305,7 @@ impl From<i32> for Number {
     fn from(other: i32) -> Self {
         let mut v = MaybeUninit::<gmp::mpz_t>::uninit();
         unsafe {
-            gmp::mpz_init_set_si(v.as_mut_ptr(), other as i64);
+            gmp::mpz_init_set_si(v.as_mut_ptr(), other as c_long);
         }
         Number {
             v: unsafe { v.assume_init() },
@@ -307,7 +317,7 @@ impl From<u64> for Number {
     fn from(other: u64) -> Self {
         let mut v = MaybeUninit::<gmp::mpz_t>::uninit();
         unsafe {
-            gmp::mpz_init_set_ui(v.as_mut_ptr(), other);
+            gmp::mpz_init_set_ui(v.as_mut_ptr(), other as c_ulong);
         }
         Number {
             v: unsafe { v.assume_init() },
@@ -319,7 +329,7 @@ impl From<usize> for Number {
     fn from(other: usize) -> Self {
         let mut v = MaybeUninit::<gmp::mpz_t>::uninit();
         unsafe {
-            gmp::mpz_init_set_ui(v.as_mut_ptr(), other as u64);
+            gmp::mpz_init_set_ui(v.as_mut_ptr(), other as c_ulong);
         }
         Number {
             v: unsafe { v.assume_init() },
@@ -332,7 +342,7 @@ impl From<Number> for u64 {
         unsafe {
             assert!(gmp::mpz_sizeinbase(&n.v, 2) <= 64);
             assert!(gmp::mpz_sgn(&n.v) >= 0);
-            gmp::mpz_get_ui(&n.v)
+            gmp::mpz_get_ui(&n.v) as u64
         }
     }
 }
@@ -341,7 +351,7 @@ impl From<Number> for i64 {
     fn from(n: Number) -> i64 {
         unsafe {
             assert!(gmp::mpz_sizeinbase(&n.v, 2) <= 64);
-            gmp::mpz_get_si(&n.v)
+            gmp::mpz_get_si(&n.v) as i64
         }
     }
 }
@@ -393,19 +403,19 @@ impl PartialEq<Number> for Number {
 
 impl PartialEq<u64> for Number {
     fn eq(&self, other: &u64) -> bool {
-        unsafe { gmp::mpz_cmp_ui(&self.v, *other) == 0 }
+        unsafe { gmp::mpz_cmp_ui(&self.v, *other as c_ulong) == 0 }
     }
 }
 
 impl PartialEq<i64> for Number {
     fn eq(&self, other: &i64) -> bool {
-        unsafe { gmp::mpz_cmp_si(&self.v, *other) == 0 }
+        unsafe { gmp::mpz_cmp_si(&self.v, *other as c_long) == 0 }
     }
 }
 
 impl PartialEq<i32> for Number {
     fn eq(&self, other: &i32) -> bool {
-        unsafe { gmp::mpz_cmp_si(&self.v, *other as i64) == 0 }
+        unsafe { gmp::mpz_cmp_si(&self.v, *other as c_long) == 0 }
     }
 }
 
@@ -425,7 +435,7 @@ impl PartialOrd<Number> for Number {
 
 impl PartialOrd<u64> for Number {
     fn partial_cmp(&self, other: &u64) -> Option<Ordering> {
-        ord_helper(unsafe { gmp::mpz_cmp_ui(&self.v, *other) })
+        ord_helper(unsafe { gmp::mpz_cmp_ui(&self.v, *other as c_ulong) })
     }
 }
 
